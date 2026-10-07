@@ -1,0 +1,367 @@
+options:
+  name: 'lab1_entregable'
+  id: 'options'
+  parameters:
+    author: 'CIT2111 - Comunicaciones Digitales'
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: 'Laboratorio 1 - Actividad Previa'
+    gen_cmake: 'On'
+    gen_linking: 'dynamic'
+    generate_options: 'qt_gui'
+    hier_block_src_path: '.:'
+    id: 'lab1_entregable'
+    max_nouts: '0'
+    output_language: 'python'
+    placement: '(0,0)'
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: 'prompt'
+    sizing_mode: 'fixed'
+    thread_safe_setters: ''
+    title: 'Lab 1 - Muestreo natural vs muestreo instantaneo plano'
+    window_size: '(1000,1000)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: 'enabled'
+blocks:
+- name: 'samp_rate'
+  id: 'variable'
+  parameters:
+    comment: 'Frecuencia de muestreo de GNURadio [Hz]'
+    value: '500e3'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 12]
+    rotation: 0
+    state: 'enabled'
+- name: 'f_sin'
+  id: 'variable'
+  parameters:
+    comment: 'Frecuencia senal sinusoidal [Hz]'
+    value: '1e3'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [296, 12]
+    rotation: 0
+    state: 'enabled'
+- name: 'f_cuadrada'
+  id: 'variable'
+  parameters:
+    comment: 'Frecuencia senal cuadrada [Hz]'
+    value: '20e3'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [408, 12]
+    rotation: 0
+    state: 'enabled'
+- name: 'A'
+  id: 'variable'
+  parameters:
+    comment: 'Amplitud senal sinusoidal'
+    value: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [528, 12]
+    rotation: 0
+    state: 'enabled'
+- name: 'analog_sig_source_x_0'
+  id: 'analog_sig_source_x'
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: 'A'
+    comment: 'Senal sinusoidal de 1 kHz'
+    freq: 'f_sin'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    phase: '0'
+    samp_rate: 'samp_rate'
+    showports: 'False'
+    type: 'float'
+    waveform: 'analog.GR_COS_WAVE'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [56, 132]
+    rotation: 0
+    state: 'enabled'
+- name: 'analog_sig_source_x_1'
+  id: 'analog_sig_source_x'
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: '1'
+    comment: 'Senal cuadrada de 20 kHz (0 / 1)'
+    freq: 'f_cuadrada'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    phase: '0'
+    samp_rate: 'samp_rate'
+    showports: 'False'
+    type: 'float'
+    waveform: 'analog.GR_SQR_WAVE'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [56, 268]
+    rotation: 0
+    state: 'enabled'
+- name: 'blocks_throttle_0'
+  id: 'blocks_throttle'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Limita la velocidad de simulacion'
+    ignoretag: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: 'samp_rate'
+    type: 'float'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [288, 284]
+    rotation: 0
+    state: 'enabled'
+- name: 'blocks_multiply_xx_0'
+  id: 'blocks_multiply_xx'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'MUESTREO NATURAL'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: 'float'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [528, 148]
+    rotation: 0
+    state: 'enabled'
+- name: 'epy_block_0'
+  id: 'epy_block'
+  parameters:
+    _source_code: |
+      import numpy as np
+      from gnuradio import gr
+
+
+      class blk(gr.sync_block):
+          """
+          Muestreo Instantaneo Plano (Sample & Hold con retorno a cero).
+
+          Entrada 0 : senal analogica (sinusoide de 1 kHz).
+          Entrada 1 : senal cuadrada de control (20 kHz, niveles 0 / 1).
+          Salida  0 : senal PAM plana (figura 2.a de la guia).
+
+          En cada flanco de subida de la senal cuadrada se toma UNA muestra de
+          la senal analogica y ese valor se mantiene constante (plano) mientras
+          el pulso este en alto. Cuando el pulso vuelve a cero, la salida
+          tambien vuelve a cero (PAM instantanea con retorno a cero).
+          """
+
+          def __init__(self):
+              gr.sync_block.__init__(
+                  self,
+                  name='Muestreo Instantaneo Plano',
+                  in_sig=[np.float32, np.float32],
+                  out_sig=[np.float32]
+              )
+              # Umbral para decidir si el pulso de control esta en alto
+              self.umbral = 0.5
+              # Memoria entre llamadas a work(): estado del control y valor retenido
+              self.ctrl_prev = False
+              self.valor_retenido = 0.0
+
+          def work(self, input_items, output_items):
+              in_data = input_items[0]   # senal sinusoidal
+              in_ctrl = input_items[1]   # senal cuadrada
+              out = output_items[0]
+              n = len(out)
+
+              # 1) Pulso en alto (True) o en bajo (False)
+              activo = in_ctrl[:n] > self.umbral
+
+              # 2) Deteccion de flanco de subida: alto ahora y bajo en la muestra anterior
+              anterior = np.concatenate(([self.ctrl_prev], activo[:-1]))
+              flancos = activo & ~anterior
+
+              # 3) Para cada muestra, indice del ultimo flanco de subida ocurrido
+              idx = np.maximum.accumulate(np.where(flancos, np.arange(n), -1))
+
+              # 4) Valor retenido: el de la senal en ese flanco (o el que venia del
+              #    bloque de datos anterior si todavia no ha ocurrido ningun flanco)
+              valores = np.where(idx >= 0,
+                                 in_data[np.maximum(idx, 0)],
+                                 self.valor_retenido)
+
+              # 5) Plano mientras el pulso este alto, cero cuando el pulso baja
+              out[:] = np.where(activo, valores, 0.0)
+
+              # 6) Guardar estado para la siguiente llamada a work()
+              self.valor_retenido = float(valores[-1])
+              self.ctrl_prev = bool(activo[-1])
+
+              return len(out)
+    affinity: ''
+    alias: ''
+    comment: 'MUESTREO INSTANTANEO (PAM plana)'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [504, 300]
+    rotation: 0
+    state: 'enabled'
+    _io_cache: '(''Muestreo Instantaneo Plano'', ''blk'', [], [(''0'', ''float'', 1), (''1'', ''float'', 1)], [(''0'', ''float'', 1)], '''', [])'
+    _source_code_hash: ''
+- name: 'qtgui_time_sink_x_0'
+  id: 'qtgui_time_sink_x'
+  parameters:
+    affinity: ''
+    alias: ''
+    autoscale: 'False'
+    axislabels: 'True'
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'True'
+    gui_hint: ''
+    legend: 'True'
+    name: '"Dominio del tiempo: PAM natural vs PAM instantanea"'
+    nconnections: '2'
+    size: '2048'
+    srate: 'samp_rate'
+    stemplot: 'False'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: 'qtgui.TRIG_MODE_FREE'
+    tr_slope: 'qtgui.TRIG_SLOPE_POS'
+    tr_tag: '""'
+    type: 'float'
+    update_time: '0.10'
+    ylabel: 'Amplitud'
+    ymax: '1.5'
+    ymin: '-1.5'
+    yunit: '""'
+    label1: 'PAM Natural'
+    label2: 'PAM Instantanea (plana)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [760, 132]
+    rotation: 0
+    state: 'enabled'
+- name: 'qtgui_freq_sink_x_0'
+  id: 'qtgui_freq_sink_x'
+  parameters:
+    affinity: ''
+    alias: ''
+    autoscale: 'False'
+    average: '1.0'
+    axislabels: 'True'
+    bw: 'samp_rate'
+    comment: ''
+    ctrlpanel: 'False'
+    fc: '0'
+    fftsize: '16384'
+    freqhalf: 'False'
+    grid: 'True'
+    gui_hint: ''
+    label: 'Relative Gain'
+    legend: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Dominio de la frecuencia: PAM natural vs PAM instantanea"'
+    nconnections: '2'
+    showports: 'False'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: 'qtgui.TRIG_MODE_FREE'
+    tr_tag: '""'
+    type: 'float'
+    units: 'dB'
+    update_time: '0.10'
+    wintype: 'window.WIN_BLACKMAN_hARRIS'
+    ymax: '0'
+    ymin: '-105'
+    label1: 'PAM Natural'
+    label2: 'PAM Instantanea (plana)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [760, 292]
+    rotation: 0
+    state: 'enabled'
+connections:
+- - 'analog_sig_source_x_0'
+  - '0'
+  - 'blocks_multiply_xx_0'
+  - '0'
+- - 'analog_sig_source_x_0'
+  - '0'
+  - 'epy_block_0'
+  - '0'
+- - 'analog_sig_source_x_1'
+  - '0'
+  - 'blocks_throttle_0'
+  - '0'
+- - 'blocks_throttle_0'
+  - '0'
+  - 'blocks_multiply_xx_0'
+  - '1'
+- - 'blocks_throttle_0'
+  - '0'
+  - 'epy_block_0'
+  - '1'
+- - 'blocks_multiply_xx_0'
+  - '0'
+  - 'qtgui_time_sink_x_0'
+  - '0'
+- - 'blocks_multiply_xx_0'
+  - '0'
+  - 'qtgui_freq_sink_x_0'
+  - '0'
+- - 'epy_block_0'
+  - '0'
+  - 'qtgui_time_sink_x_0'
+  - '1'
+- - 'epy_block_0'
+  - '0'
+  - 'qtgui_freq_sink_x_0'
+  - '1'
+metadata:
+  file_format: 1
+  grc_version: '3.10.9.2'

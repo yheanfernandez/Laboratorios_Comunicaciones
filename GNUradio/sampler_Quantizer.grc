@@ -1,0 +1,678 @@
+options:
+  parameters:
+    author: 'CIT2111 - Comunicaciones Digitales'
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: 'Laboratorio 1 - Actividad en el laboratorio III-B'
+    gen_cmake: 'On'
+    gen_linking: 'dynamic'
+    generate_options: 'qt_gui'
+    hier_block_src_path: '.:'
+    id: 'lab1_sesion'
+    max_nouts: '0'
+    output_language: 'python'
+    placement: '(0,0)'
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: 'prompt'
+    sizing_mode: 'fixed'
+    thread_safe_setters: ''
+    title: 'Lab 1 - Sesion: Sampler, Quantizer, potencia y SNR'
+    window_size: '(1000,1000)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: 'enabled'
+blocks:
+- name: 'samp_rate'
+  id: 'variable'
+  parameters:
+    comment: 'Frecuencia de muestreo de GNURadio [Hz]'
+    value: '500e3'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 12]
+    rotation: 0
+    state: 'enabled'
+- name: 'f_sin'
+  id: 'variable'
+  parameters:
+    comment: 'Frecuencia senal sinusoidal [Hz]'
+    value: '1e3'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [296, 12]
+    rotation: 0
+    state: 'enabled'
+- name: 'f_cuadrada'
+  id: 'variable'
+  parameters:
+    comment: 'Frecuencia senal cuadrada [Hz]'
+    value: '20e3'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [408, 12]
+    rotation: 0
+    state: 'enabled'
+- name: 'A'
+  id: 'variable'
+  parameters:
+    comment: 'Amplitud senal sinusoidal'
+    value: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [528, 12]
+    rotation: 0
+    state: 'enabled'
+- name: 'M_p'
+  id: 'variable'
+  parameters:
+    comment: 'Valor maximo de entrada del cuantizador'
+    value: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [616, 12]
+    rotation: 0
+    state: 'enabled'
+- name: 'N_prom'
+  id: 'variable'
+  parameters:
+    comment: 'Muestras en 1 periodo de la sinusoide (largo del promedio)'
+    value: 'int(samp_rate/f_sin)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [704, 12]
+    rotation: 0
+    state: 'enabled'
+- name: 'N_bits'
+  id: 'variable_qtgui_range'
+  parameters:
+    comment: 'Numero de bits: mover entre 2 y 10 para la pregunta 3'
+    gui_hint: ''
+    label: 'N bits'
+    min_len: '200'
+    orient: 'QtCore.Qt.Horizontal'
+    rangeType: 'int'
+    start: '2'
+    step: '1'
+    stop: '10'
+    value: '4'
+    widget: 'counter_slider'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [864, 12]
+    rotation: 0
+    state: 'enabled'
+- name: 'analog_sig_source_x_0'
+  id: 'analog_sig_source_x'
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: 'A'
+    comment: 'Senal sinusoidal de 1 kHz'
+    freq: 'f_sin'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    phase: '0'
+    samp_rate: 'samp_rate'
+    showports: 'False'
+    type: 'float'
+    waveform: 'analog.GR_COS_WAVE'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [40, 140]
+    rotation: 0
+    state: 'enabled'
+- name: 'analog_sig_source_x_1'
+  id: 'analog_sig_source_x'
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: '1'
+    comment: 'Senal cuadrada de 20 kHz (0 / 1)'
+    freq: 'f_cuadrada'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    phase: '0'
+    samp_rate: 'samp_rate'
+    showports: 'False'
+    type: 'float'
+    waveform: 'analog.GR_SQR_WAVE'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [40, 300]
+    rotation: 0
+    state: 'enabled'
+- name: 'blocks_throttle_0'
+  id: 'blocks_throttle'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Limita la velocidad de simulacion'
+    ignoretag: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: 'samp_rate'
+    type: 'float'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [248, 316]
+    rotation: 0
+    state: 'enabled'
+- name: 'sampler'
+  id: 'epy_block'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'SAMPLER (S&H sin retorno a cero)'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    _source_code: |
+      import numpy as np
+      from gnuradio import gr
+
+
+      class blk(gr.sync_block):
+          """
+          Sampler: sample & hold SIN retorno a cero (figura 2.b de la guia).
+
+          Entrada 0 : senal sinusoidal.
+          Entrada 1 : senal cuadrada de control (niveles 0 / 1).
+          Salida  0 : senal PAM plana. En cada flanco de subida de la cuadrada se
+                      toma una muestra y se mantiene durante TODO el periodo Ts,
+                      hasta el siguiente flanco (ya no vuelve a cero).
+          """
+
+          def __init__(self):
+              gr.sync_block.__init__(
+                  self,
+                  name='Sampler',
+                  in_sig=[np.float32, np.float32],
+                  out_sig=[np.float32]
+              )
+              self.umbral = 0.5           # decide si el pulso esta en alto
+              self.ctrl_prev = False      # estado del pulso en la muestra anterior
+              self.valor_retenido = 0.0   # ultima muestra tomada
+
+          def work(self, input_items, output_items):
+              in_data = input_items[0]
+              in_ctrl = input_items[1]
+              out = output_items[0]
+              n = len(out)
+
+              # 1) Pulso en alto / bajo
+              activo = in_ctrl[:n] > self.umbral
+
+              # 2) Flancos de subida
+              anterior = np.concatenate(([self.ctrl_prev], activo[:-1]))
+              flancos = activo & ~anterior
+
+              # 3) Indice del ultimo flanco ocurrido para cada muestra
+              idx = np.maximum.accumulate(np.where(flancos, np.arange(n), -1))
+
+              # 4) Valor retenido (si aun no hay flanco en este bloque de datos,
+              #    se usa el que venia de la llamada anterior)
+              valores = np.where(idx >= 0,
+                                 in_data[np.maximum(idx, 0)],
+                                 self.valor_retenido)
+
+              # 5) Sin retorno a cero: la muestra se mantiene todo el periodo
+              out[:] = valores
+
+              # 6) Guardar estado para la siguiente llamada
+              self.valor_retenido = float(valores[-1])
+              self.ctrl_prev = bool(activo[-1])
+              return len(out)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [448, 236]
+    rotation: 0
+    state: 'enabled'
+    _io_cache: '(''Sampler'', ''blk'', [], [(''0'', ''float'', 1), (''1'', ''float'', 1)], [(''0'', ''float'', 1)], '''', [])'
+    _source_code_hash: ''
+- name: 'quantizer'
+  id: 'epy_block'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'QUANTIZER'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    _source_code: |
+      import numpy as np
+      from gnuradio import gr
+
+
+      class blk(gr.sync_block):
+          """
+          Quantizer: cuantizador uniforme (mid-rise) de N_bits sobre [-M_p, +M_p].
+
+          N_bits : numero de bits del cuantizador  ->  L = 2**N_bits niveles
+          M_p    : valor maximo de entrada (fondo de escala)
+
+          Paso de cuantizacion:  delta = 2*M_p / L
+          Cada muestra se reemplaza por el centro del escalon que le corresponde.
+          """
+
+          def __init__(self, N_bits=4, M_p=1.0):
+              gr.sync_block.__init__(
+                  self,
+                  name='Quantizer',
+                  in_sig=[np.float32],
+                  out_sig=[np.float32]
+              )
+              self.N_bits = N_bits
+              self.M_p = M_p
+
+          def work(self, input_items, output_items):
+              x = input_items[0]
+              out = output_items[0]
+
+              # Se recalcula en cada llamada para que el slider de N_bits
+              # cambie el cuantizador en vivo
+              N = int(round(self.N_bits))
+              Mp = float(self.M_p)
+              L = 2 ** N                      # numero de niveles
+              delta = 2.0 * Mp / L            # paso de cuantizacion
+
+              # 1) Limitar al fondo de escala (evita sobrecarga)
+              xc = np.clip(x, -Mp, Mp)
+
+              # 2) Indice del escalon: de -L/2 a L/2-1
+              k = np.floor(xc / delta)
+              k = np.clip(k, -L / 2, L / 2 - 1)
+
+              # 3) Valor cuantizado = centro del escalon
+              out[:] = (k + 0.5) * delta
+              return len(out)
+    N_bits: 'N_bits'
+    M_p: 'M_p'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [640, 236]
+    rotation: 0
+    state: 'enabled'
+    _io_cache: '(''Quantizer'', ''blk'', [(''N_bits'', ''4''), (''M_p'', ''1.0'')], [(''0'', ''float'', 1)], [(''0'', ''float'', 1)], '''', [''M_p'', ''N_bits''])'
+    _source_code_hash: ''
+- name: 'error_cuantizacion'
+  id: 'blocks_sub_xx'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'e[n] = x_q[n] - x_s[n]'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: 'float'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [856, 352]
+    rotation: 0
+    state: 'enabled'
+- name: 'pot_senal_cuadrado'
+  id: 'blocks_multiply_xx'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'x[n]^2 de la sinusoide'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: 'float'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [448, 108]
+    rotation: 0
+    state: 'enabled'
+- name: 'pot_senal_promedio'
+  id: 'blocks_moving_average_xx'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'E[x^2]: promedio de 1 periodo de la sinusoide'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    length: 'N_prom'
+    max_iter: '4000'
+    scale: '1.0/N_prom'
+    type: 'float'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [608, 108]
+    rotation: 0
+    state: 'enabled'
+- name: 'pot_ruido_cuadrado'
+  id: 'blocks_multiply_xx'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'e[n]^2 del error'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: 'float'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 352]
+    rotation: 0
+    state: 'enabled'
+- name: 'pot_ruido_promedio'
+  id: 'blocks_moving_average_xx'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'E[x^2]: promedio de 1 periodo de la sinusoide'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    length: 'N_prom'
+    max_iter: '4000'
+    scale: '1.0/N_prom'
+    type: 'float'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 352]
+    rotation: 0
+    state: 'enabled'
+- name: 'snr_division'
+  id: 'blocks_divide_xx'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Ps / Pe'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: 'float'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1360, 216]
+    rotation: 0
+    state: 'enabled'
+- name: 'snr_db'
+  id: 'blocks_nlog10_ff'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: '10*log10(Ps/Pe) = SNR [dB]'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    k: '0'
+    n: '10'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1480, 216]
+    rotation: 0
+    state: 'enabled'
+- name: 'ns_pot_senal'
+  id: 'qtgui_number_sink'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    autoscale: 'False'
+    avg: '0'
+    color1: '("black", "black")'
+    factor1: '1'
+    graph_type: 'qtgui.NUM_GRAPH_HORIZ'
+    gui_hint: ''
+    label1: 'Potencia senal Ps'
+    max: '1'
+    min: '0'
+    name: '"Potencia de la senal sinusoidal"'
+    nconnections: '1'
+    type: 'float'
+    unit1: 'W'
+    update_time: '0.20'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [832, 92]
+    rotation: 0
+    state: 'enabled'
+- name: 'ns_pot_ruido'
+  id: 'qtgui_number_sink'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    autoscale: 'False'
+    avg: '0'
+    color1: '("black", "black")'
+    factor1: '1e6'
+    graph_type: 'qtgui.NUM_GRAPH_HORIZ'
+    gui_hint: ''
+    label1: 'Potencia ruido Pe'
+    max: '25000'
+    min: '0'
+    name: '"Potencia de ruido de cuantizacion (x 1e6)"'
+    nconnections: '1'
+    type: 'float'
+    unit1: 'uW'
+    update_time: '0.20'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1360, 400]
+    rotation: 0
+    state: 'enabled'
+- name: 'ns_snr'
+  id: 'qtgui_number_sink'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    autoscale: 'False'
+    avg: '0'
+    color1: '("black", "black")'
+    factor1: '1'
+    graph_type: 'qtgui.NUM_GRAPH_HORIZ'
+    gui_hint: ''
+    label1: 'SNR'
+    max: '70'
+    min: '0'
+    name: '"Relacion senal a ruido de cuantizacion"'
+    nconnections: '1'
+    type: 'float'
+    unit1: 'dB'
+    update_time: '0.20'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1640, 200]
+    rotation: 0
+    state: 'enabled'
+- name: 'qtgui_time_sink_x_0'
+  id: 'qtgui_time_sink_x'
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    autoscale: 'False'
+    axislabels: 'True'
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'True'
+    gui_hint: ''
+    legend: 'True'
+    name: '"Sinusoide, salida del Sampler y salida del Quantizer"'
+    nconnections: '3'
+    size: '1500'
+    srate: 'samp_rate'
+    stemplot: 'False'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: 'qtgui.TRIG_MODE_FREE'
+    tr_slope: 'qtgui.TRIG_SLOPE_POS'
+    tr_tag: '""'
+    type: 'float'
+    update_time: '0.10'
+    label1: 'Sinusoide'
+    label2: 'Sampler (S&H)'
+    label3: 'Quantizer'
+    ylabel: 'Amplitud'
+    ymax: '1.3'
+    ymin: '-1.3'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [856, 500]
+    rotation: 0
+    state: 'enabled'
+connections:
+- - 'analog_sig_source_x_0'
+  - '0'
+  - 'sampler'
+  - '0'
+- - 'analog_sig_source_x_1'
+  - '0'
+  - 'blocks_throttle_0'
+  - '0'
+- - 'blocks_throttle_0'
+  - '0'
+  - 'sampler'
+  - '1'
+- - 'sampler'
+  - '0'
+  - 'quantizer'
+  - '0'
+- - 'analog_sig_source_x_0'
+  - '0'
+  - 'pot_senal_cuadrado'
+  - '0'
+- - 'analog_sig_source_x_0'
+  - '0'
+  - 'pot_senal_cuadrado'
+  - '1'
+- - 'pot_senal_cuadrado'
+  - '0'
+  - 'pot_senal_promedio'
+  - '0'
+- - 'pot_senal_promedio'
+  - '0'
+  - 'ns_pot_senal'
+  - '0'
+- - 'quantizer'
+  - '0'
+  - 'error_cuantizacion'
+  - '0'
+- - 'sampler'
+  - '0'
+  - 'error_cuantizacion'
+  - '1'
+- - 'error_cuantizacion'
+  - '0'
+  - 'pot_ruido_cuadrado'
+  - '0'
+- - 'error_cuantizacion'
+  - '0'
+  - 'pot_ruido_cuadrado'
+  - '1'
+- - 'pot_ruido_cuadrado'
+  - '0'
+  - 'pot_ruido_promedio'
+  - '0'
+- - 'pot_ruido_promedio'
+  - '0'
+  - 'ns_pot_ruido'
+  - '0'
+- - 'pot_senal_promedio'
+  - '0'
+  - 'snr_division'
+  - '0'
+- - 'pot_ruido_promedio'
+  - '0'
+  - 'snr_division'
+  - '1'
+- - 'snr_division'
+  - '0'
+  - 'snr_db'
+  - '0'
+- - 'snr_db'
+  - '0'
+  - 'ns_snr'
+  - '0'
+- - 'analog_sig_source_x_0'
+  - '0'
+  - 'qtgui_time_sink_x_0'
+  - '0'
+- - 'sampler'
+  - '0'
+  - 'qtgui_time_sink_x_0'
+  - '1'
+- - 'quantizer'
+  - '0'
+  - 'qtgui_time_sink_x_0'
+  - '2'
+metadata:
+  file_format: 1
+  grc_version: '3.10.9.2'
